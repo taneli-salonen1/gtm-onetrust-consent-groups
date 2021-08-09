@@ -1,5 +1,5 @@
 homepage: "https://www.linkedin.com/in/taneli-salonen/"
 documentation: "https://github.com/taneli-salonen1/gtm-onetrust-consent-groups"
 versions:
-  - sha: 10c62302238c0314064cde4690ff33b6fc3a5aa5
+  - sha: e4e088cbab8e3034b41053115de69bbdda6664ae
     changeNotes: Initial release.
