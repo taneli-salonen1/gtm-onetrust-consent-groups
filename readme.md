@@ -10,5 +10,7 @@ Functionality:
 Output options:
 A comma joined string or a JS array.
 
+New: Possibility to return the selected consent group's status as "true" or "false".
+
 Usage:
-Check if the variable value contains the desired group, for example "4:1". 4 is the number of the group and 1 means that it's active.
+Check if the variable value contains the desired group, for example "C0002:1". C0002 is the consent group and 1 means that consent for it has been granted.
