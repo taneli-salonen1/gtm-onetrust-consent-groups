@@ -1,5 +1,7 @@
 homepage: "https://tanelytics.com/"
 documentation: "https://github.com/taneli-salonen1/gtm-onetrust-consent-groups"
 versions:
+  - sha: bafe38b6a91d3e05cc6ebf10ae747fc61671f6c5
+    changeNotes: Support for returning a selected consent group's status.
   - sha: e4e088cbab8e3034b41053115de69bbdda6664ae
     changeNotes: Initial release.
