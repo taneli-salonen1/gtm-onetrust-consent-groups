@@ -155,17 +155,22 @@ if (typeof consentDataLayer === 'string' && consentDataLayer.length > 0) {
   }
 }
 
-// if dataLayer is not available, check the OptanonConsent cookie for consent groups
+// if dataLayer is not available, check the OptanonConsent cookie for consent groups and other consent information
 const consentCookie = getCookieValues('OptanonConsent', true)[0];
 if (typeof consentCookie === 'string' && consentCookie.indexOf('groups=') > -1) {
   const groupsPart = consentCookie.split("&").filter(function(keyval) {
-    // This is the part that stores the consent groups
-    return keyval.indexOf("groups=") === 0;
+    // All of these are used to store consent information
+    return keyval.indexOf("groups=") === 0 || keyval.indexOf("genVendors=") === 0 || keyval.indexOf("hosts=") === 0;
   });
   
   if (groupsPart.length > 0) {
-    const groupValue = groupsPart[0].split("=")[1];
-    const consentGroupsArr = groupValue ? groupValue.split(",") : null;
+    // join all consent data into one string
+    const allGroups = groupsPart.map(part => {
+      const groupData = part.split("=");
+      return groupData[1] ? groupData[1] : '';
+    }).join(',');
+    
+    const consentGroupsArr = allGroups ? allGroups.split(",") : null;
 
     if (consentGroupsArr) {
       const consentGroups = consentGroupsArr.filter(function(group) {
