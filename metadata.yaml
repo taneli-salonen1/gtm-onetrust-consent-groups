@@ -1,6 +1,8 @@
 homepage: "https://tanelytics.com/"
 documentation: "https://github.com/taneli-salonen1/gtm-onetrust-consent-groups"
 versions:
+  - sha: 2673adcae56844d304163304aebaaf74f78bd51e
+    changeNotes: Support for reading vendor and host consent from the cookie.
   - sha: bafe38b6a91d3e05cc6ebf10ae747fc61671f6c5
     changeNotes: Support for returning a selected consent group's status.
   - sha: e4e088cbab8e3034b41053115de69bbdda6664ae
