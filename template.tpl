@@ -53,6 +53,24 @@ ___TEMPLATE_PARAMETERS___
             "displayName": "Selected individual group",
             "simpleValueType": true,
             "help": "For example \"C0002\""
+          },
+          {
+            "type": "RADIO",
+            "name": "individualConsentOutput",
+            "displayName": "Return consent group status as",
+            "radioItems": [
+              {
+                "value": "true_false",
+                "displayValue": "\"false\" / \"true\"",
+                "help": "Default \"true\" or \"false\""
+              },
+              {
+                "value": "consent_mode",
+                "displayValue": "\"denied\" / \"granted\"",
+                "help": "GTM Consent Mode format"
+              }
+            ],
+            "simpleValueType": true
           }
         ],
         "help": "Select an individual consent group to return its status as \"true\" or \"false\"."
@@ -122,12 +140,16 @@ const copyFromDataLayer = require('copyFromDataLayer');
 
 // return the value based on the selections in the template
 function returnVariableValue(value) {
+  const individualConsentReturnVal = {
+    'true': data.individualConsentOutput === 'consent_mode' ? 'granted' : 'true',
+    'false': data.individualConsentOutput === 'consent_mode' ? 'denied' : 'false'
+  };
   
   // return only the selected groups status
   if (data.returnType === 'selected') {
     return value.filter(v => {
       return v.split(':')[0] === data.selectedGroup;
-    }).length > 0 ? 'true' : 'false';
+    }).length > 0 ? individualConsentReturnVal['true'] : individualConsentReturnVal['false'];
   }
   
   // return the full list as a string
