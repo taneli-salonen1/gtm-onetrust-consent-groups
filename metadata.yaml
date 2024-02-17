@@ -1,7 +1,7 @@
 homepage: "https://tanelytics.com/"
 documentation: "https://github.com/taneli-salonen1/gtm-onetrust-consent-groups"
 versions:
-  - sha: 4e78a32b3ed74ecde0d7d66d5e742d43ef3afc35
+  - sha: 4804c2880e9c8bd26ddd3c2b34e3d6f3b8db7e36
     changeNotes: Added global variables OnetrustActiveGroups and OptanonActiveGroups as consent information source.
   - sha: 69ae56de8abb14bb386d87610768cf47d59648c9
     changeNotes: Added option to return individual consent statuses in consent mode format, granted or denied.
