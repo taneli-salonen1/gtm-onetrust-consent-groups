@@ -1,4 +1,4 @@
-﻿___TERMS_OF_SERVICE___
+___TERMS_OF_SERVICE___
 
 By creating or modifying this file you agree to Google Tag Manager's Community
 Template Gallery Developer Terms of Service available at
@@ -137,6 +137,7 @@ Template by Taneli Salonen.
 const log = require('logToConsole');
 const getCookieValues = require('getCookieValues');
 const copyFromDataLayer = require('copyFromDataLayer');
+const copyFromWindow = require('copyFromWindow');
 
 // return the value based on the selections in the template
 function returnVariableValue(value) {
@@ -161,11 +162,11 @@ function returnVariableValue(value) {
   return value;
 }
 
-// first, try to access the values from the dataLayer
-const consentDataLayer = copyFromDataLayer('OptanonActiveGroups') || copyFromDataLayer('OnetrustActiveGroups');
-if (typeof consentDataLayer === 'string' && consentDataLayer.length > 0) {
+// first, try to access the values from the dataLayer or global variables
+const consentDataLayerOrGlobal = copyFromWindow('OnetrustActiveGroups') || copyFromWindow('OptanonActiveGroups') || copyFromDataLayer('OnetrustActiveGroups') || copyFromDataLayer('OptanonActiveGroups');
+if (typeof consentDataLayerOrGlobal === 'string' && consentDataLayerOrGlobal.length > 0) {
   
-  const consentGroups = consentDataLayer.split(',').filter(function(group) {
+  const consentGroups = consentDataLayerOrGlobal.split(',').filter(function(group) {
     return group.length > 0;
   }).map(function(group) {
     return group + ':1';
@@ -283,6 +284,13 @@ ___WEB_PERMISSIONS___
       },
       "param": [
         {
+          "key": "allowedKeys",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
           "key": "keyPatterns",
           "value": {
             "type": 2,
@@ -304,6 +312,106 @@ ___WEB_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_globals",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "keys",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "OptanonActiveGroups"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "OnetrustActiveGroups"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
   }
 ]
 
@@ -311,6 +419,27 @@ ___WEB_PERMISSIONS___
 ___TESTS___
 
 scenarios:
+- name: global variable is available
+  code: |-
+    const mockData = {
+      outputType: 'string'
+    };
+
+    const log = require('logToConsole');
+
+    mock('copyFromWindow', (varName) => {
+      return ",1,2,3";
+    });
+
+    // Call runCode to run the template's code.
+    let variableResult = runCode(mockData);
+
+    log(variableResult);
+
+    const expectedResult = "1:1,2:1,3:1";
+
+    // Verify that the variable result is as expected
+    assertThat(variableResult).isEqualTo(expectedResult);
 - name: dataLayer is available
   code: |-
     const mockData = {
@@ -329,6 +458,31 @@ scenarios:
     log(variableResult);
 
     const expectedResult = "1:1,2:1,3:1";
+
+    // Verify that the variable result is as expected
+    assertThat(variableResult).isEqualTo(expectedResult);
+- name: cookie data available, no global variable
+  code: |-
+    const mockData = {
+      outputType: 'string'
+    };
+
+    const log = require('logToConsole');
+
+    mock('copyFromWindow', (varName) => {
+      return undefined;
+    });
+
+    mock('getCookieValues', (cookieName, decode) => {
+      return ['isIABGlobal=false&datestamp=Mon+Aug+09+2021+08:27:26+GMT+0300+(Eastern+European+Summer+Time)&version=6.21.0&landingPath=NotLandingPage&groups=1:1,2:1'];
+    });
+
+    // Call runCode to run the template's code.
+    let variableResult = runCode(mockData);
+
+    log(variableResult);
+
+    const expectedResult = "1:1,2:1";
 
     // Verify that the variable result is as expected
     assertThat(variableResult).isEqualTo(expectedResult);
@@ -357,7 +511,7 @@ scenarios:
 
     // Verify that the variable result is as expected
     assertThat(variableResult).isEqualTo(expectedResult);
-- name: no dl, no cookie, only default fallback
+- name: no global variable, no dl, no cookie, only default fallback
   code: |-
     const mockData = {
       outputType: 'string',
@@ -365,6 +519,10 @@ scenarios:
     };
 
     const log = require('logToConsole');
+
+    mock('copyFromWindow', (varName) => {
+      return undefined;
+    });
 
     mock('copyFromDataLayer', (dlName) => {
       return undefined;
@@ -383,13 +541,17 @@ scenarios:
 
     // Verify that the variable result is as expected
     assertThat(variableResult).isEqualTo(expectedResult);
-- name: no dl, no cookie, no default fallback
+- name: no global variable, no dl, no cookie, no default fallback
   code: |-
     const mockData = {
       outputType: 'string'
     };
 
     const log = require('logToConsole');
+
+    mock('copyFromWindow', (varName) => {
+      return undefined;
+    });
 
     mock('copyFromDataLayer', (dlName) => {
       return undefined;
@@ -417,6 +579,31 @@ scenarios:
     const log = require('logToConsole');
 
     mock('copyFromDataLayer', (dlName) => {
+      return ",,";
+    });
+
+    mock('getCookieValues', (cookieName, decode) => {
+      return ['isIABGlobal=false&datestamp=Mon+Aug+09+2021+08:27:26+GMT+0300+(Eastern+European+Summer+Time)&version=6.21.0&landingPath=NotLandingPage&groups=1:1,2:1'];
+    });
+
+    // Call runCode to run the template's code.
+    let variableResult = runCode(mockData);
+
+    log(variableResult);
+
+    const expectedResult = "1:1,2:1";
+
+    // Verify that the variable result is as expected
+    assertThat(variableResult).isEqualTo(expectedResult);
+- name: global variable with empty values, cookie available
+  code: |-
+    const mockData = {
+      outputType: 'string'
+    };
+
+    const log = require('logToConsole');
+
+    mock('copyFromWindow', (varName) => {
       return ",,";
     });
 
@@ -481,6 +668,31 @@ scenarios:
 
     // Verify that the variable result is as expected
     assertThat(variableResult).isEqualTo(expectedResult);
+- name: cookie data available, no global variable, return an array
+  code: |-
+    const mockData = {
+      outputType: 'array'
+    };
+
+    const log = require('logToConsole');
+
+    mock('copyFromWindow', (varName) => {
+      return undefined;
+    });
+
+    mock('getCookieValues', (cookieName, decode) => {
+      return ['isIABGlobal=false&datestamp=Mon+Aug+09+2021+08:27:26+GMT+0300+(Eastern+European+Summer+Time)&version=6.21.0&landingPath=NotLandingPage&groups=1:1,2:1'];
+    });
+
+    // Call runCode to run the template's code.
+    let variableResult = runCode(mockData);
+
+    log(variableResult);
+
+    const expectedResult = ["1:1","2:1"];
+
+    // Verify that the variable result is as expected
+    assertThat(variableResult).isEqualTo(expectedResult);
 - name: OnetrustActiveGroups dataLayer
   code: |-
     const mockData = {
@@ -491,6 +703,30 @@ scenarios:
 
     mock('copyFromDataLayer', (dlName) => {
       if (dlName === 'OnetrustActiveGroups') {
+        return ",1,2,3";
+      }
+      return undefined;
+    });
+
+    // Call runCode to run the template's code.
+    let variableResult = runCode(mockData);
+
+    log(variableResult);
+
+    const expectedResult = "1:1,2:1,3:1";
+
+    // Verify that the variable result is as expected
+    assertThat(variableResult).isEqualTo(expectedResult);
+- name: OnetrustActiveGroups global variable
+  code: |-
+    const mockData = {
+      outputType: 'string'
+    };
+
+    const log = require('logToConsole');
+
+    mock('copyFromWindow', (varName) => {
+      if (varName === 'OnetrustActiveGroups') {
         return ",1,2,3";
       }
       return undefined;
